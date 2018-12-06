@@ -42,10 +42,6 @@
 </template>
 
 <script>
-// sekret, tu możesz ruszać
-const sekret = ""; // site key
-// już nie możesz ruszać
-
 import Axios from 'axios';
 
 export default {
@@ -63,7 +59,6 @@ export default {
   }},
   beforeMount: function() {
     this.init();
-    this.captcha();
   },
   watch: {
     '$route' (to, from) {
@@ -82,6 +77,7 @@ export default {
   },
   methods: {
     next: function() {
+      //console.log(this.$parent.darkMode)
       if(this.pytanka[this.current.id+1]) {
         this.currentID = this.currentID+1
       } else {
@@ -98,7 +94,7 @@ export default {
         }, {
           withCredentials: true,
           params: {
-            id: "real"
+            id: this.$route.params.id
           }
         })
         .then(resp => {
@@ -124,11 +120,11 @@ export default {
         return 'Wyślij'
       }
     },
-    captcha: function () {
+    captcha: function (tk) {
       window.c = this;
       var c = this;
       grecaptcha.ready(function () {
-        grecaptcha.execute(sekret, {
+        grecaptcha.execute(tk, {
             action: 'action_name'
           })
           .then(token => {
@@ -141,7 +137,7 @@ export default {
           credentials: 'include'
         })
         .then(resp => {
-          console.log(resp.status)
+          //console.log(resp.status)
           if(resp.status == 200) {
             return resp.json()
           } else {
@@ -164,12 +160,15 @@ export default {
             }
           }
         })
-        .then(data => {
+        .then(datu => {
+            const data = datu.gg;
+            //console.dir(datu)
             this.blad = false;
             this.pytanka = data.pytanka;
             this.naglowek = data.naglowek;
             this.podnaglowek = data.podnaglowek;
             this.pozegnalna = data.pozegnalna;
+            this.captcha(datu.captcha);
           })
           .catch(error => {
             this.blad = true;
@@ -187,10 +186,13 @@ export default {
   }
 }
 .okno {
+  border-radius: 5px;
   box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
   margin: auto;
 }
 .tytul {
+  border-top-left-radius: 5px;
+  border-top-right-radius: 5px;
   padding: 20px;
   color: white;
 }
@@ -210,6 +212,7 @@ export default {
 
 .reszta {
   padding: 20px;
+  transition: color 200ms;
 }
 
 .blad {
@@ -255,13 +258,15 @@ export default {
   padding: 8px 20px;
   font-weight: 600;
   font-size: 100%;
-  transition: 200ms;
+  transition: background 200ms;
+  -moz-transition: 200ms;
 
   &:hover {
     background: rgba(0,115,177, 0.8);
     color: white;
   }
 }
+
 .selected {
   background: #0073b1;
   color: white;
@@ -270,7 +275,7 @@ export default {
   display: flex;
   align-items: center;
   padding: 20px;
-  border-top: 1px solid #bfbfbf;
+  transition: 200ms;
 }
 
 .btn {
@@ -287,10 +292,6 @@ export default {
   &:hover {
     background: rgba(0,115,177, 0.8);  
   }
-
-  &:disabled {
-    background: rgba(0,115,177, 0.3); 
-  }
 }
 
 .kropeczki {
@@ -298,7 +299,6 @@ export default {
 }
 .kropeczka {
   margin-right: 10px;
-  background: #bfbfbf;
   width: 8px;
   height: 8px;
   border-radius: 2138px;
@@ -306,5 +306,44 @@ export default {
 }
 .aktualna {
   background: #404040;
+}
+
+// elementy zależne od motywu
+.light {
+  * {
+    //transition: 200ms;
+  }
+  .kropeczka { background: #bfbfbf;}
+  .aktualna { background: #404040; }
+  .stopek {
+    border-top: 1px solid #bfbfbf;
+  }
+  .btn:disabled {
+      background: rgba(0,115,177, 0.3); 
+  }
+}
+
+.dark {
+  .yn {
+    color: rgb(226, 226, 226);
+  }
+  * { 
+    //transition: 200ms;
+  }
+  .kropeczka { background: #404040; }
+  .aktualna { background: #bfbfbf; }
+  .stopek {
+    border-top: 1px solid #404040;
+  }
+  .btn:disabled {
+      background: rgba(0,115,177, 0.1); 
+  }
+}
+</style>
+
+<style>
+footer {
+  position: absolute;
+  bottom: 0;
 }
 </style>

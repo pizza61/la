@@ -1,0 +1,6 @@
+{
+    "captchaSite": "recaptcha v3 site key",
+    "captchaSecret": "recaptcha v3 secret key",
+    "googleClientID": "google application client id",
+    "googleSecret": "google application client secret"
+}
