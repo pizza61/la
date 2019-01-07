@@ -8,8 +8,10 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strings"
 	"time"
 
+	"github.com/globalsign/mgo/bson"
 	"github.com/pizza61/la/api"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
@@ -26,17 +28,8 @@ var (
 
 func main() {
 	e := echo.New()
-	jsonF, err := os.Open("config.json")
-	if err != nil {
-		e.StdLogger.Fatal("Nie ma pliku konfiguracyjnego!")
-	}
 
-	defer jsonF.Close()
-
-	byt, _ := ioutil.ReadAll(jsonF)
-
-	var rest api.Config
-	json.Unmarshal([]byte(byt), &rest)
+	rest := api.GetConfigJson()
 	googleOauthConfig = &oauth2.Config{
 		RedirectURL:  "http://localhost:8080/api/callback",
 		ClientID:     rest.GoogleClientID,
@@ -60,6 +53,17 @@ func main() {
 	e.GET("/api/gogiel", googleMain)
 	e.GET("/api/login", googleLogin)
 	e.GET("/api/callback", googleCallback)
+
+	e.GET("/api/logout", func(c echo.Context) error {
+		ck := new(http.Cookie)
+		ck.Path = "/"
+		ck.Name = "access_token"
+		ck.Value = ""
+		ck.Expires = time.Unix(0, 0)
+
+		c.SetCookie(ck)
+		return c.String(http.StatusOK, "git")
+	})
 	// PYTANKA
 	e.GET("/api/pytanka", func(c echo.Context) error {
 		gg, err := api.GetPytanka(c, a, c.QueryParam("id"))
@@ -119,9 +123,57 @@ func main() {
 		return c.String(http.StatusOK, "true")
 	})
 
+	e.POST("/api/list", func(c echo.Context) error {
+		kek, err := api.ListAnkiety(c, a)
+		if err != nil {
+			fmt.Println("c")
+			return c.NoContent(http.StatusInternalServerError)
+		}
+
+		return c.JSON(http.StatusOK, kek)
+	})
+	e.POST("/api/new", func(c echo.Context) error {
+		kek, err := api.PlusAnkieta(c, a)
+		if err != nil {
+			if err.Error() == "Limit" {
+				return c.String(http.StatusNotAcceptable, "Limit")
+			} else {
+				return c.NoContent(http.StatusInternalServerError)
+			}
+		}
+		return c.String(http.StatusOK, kek)
+	})
+	e.GET("/api/ankieta", func(c echo.Context) error {
+		ankieta, err := api.GetAnkieta(c, a, c.QueryParam("id"))
+		if err != nil {
+			return c.String(http.StatusInternalServerError, err.Error())
+		}
+		return c.JSON(http.StatusOK, ankieta)
+	})
 	// generalnie
 	e.Static("/", "client/dist")
-	e.GET("/ankieta/*", func(c echo.Context) error {
+	e.GET("/a/:id", func(c echo.Context) error {
+		if strings.Contains(c.Request().UserAgent(), "Gecko") {
+			return c.File("./client/dist/index.html")
+		} else {
+			result := api.Ankieta{}
+			err := a.Find(bson.M{"aid": c.Param("id")}).One(&result)
+			if err != nil {
+				return err
+			}
+			return c.HTML(http.StatusOK, `
+<!DOCTYPE html><html>
+<head>
+	<meta property="og:title" content="`+result.Dane.Naglowek+`">
+	<meta property="og:type" content="website">
+	<meta property="og:site_name" content="la">
+	<meta property="og:image" content="/favicon.png">
+	<meta property="og:color" content="#565656">
+</head>
+<body>:)</body></html>`)
+		}
+	})
+	e.GET("/panel", func(c echo.Context) error {
 		return c.File("./client/dist/index.html")
 	})
 	//exec.Command("xdg-open", "https://localhost:8080/").Start()
@@ -132,7 +184,7 @@ func googleMain(c echo.Context) error {
 	moze, err := api.GetUserData(c)
 	if err != nil {
 		fmt.Println(err)
-		return c.String(http.StatusOK, "Ok")
+		return c.NoContent(http.StatusUnauthorized)
 	}
 	return c.JSON(http.StatusOK, moze)
 }
@@ -166,7 +218,9 @@ func googleCallback(c echo.Context) error {
 	ck.Path = "/"
 	ck.Name = "access_token"
 	ck.Value = token.AccessToken
+	ck.MaxAge = 60 * 60 * 24 * 3
 
 	c.SetCookie(ck)
+
 	return c.Redirect(http.StatusTemporaryRedirect, "/")
 }

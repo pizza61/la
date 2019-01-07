@@ -3,7 +3,7 @@
         <nav>
             <b>ładna ankieta</b>
             <span style="flex: 0 10000 100%"></span>
-            <button class="btnk orangutan">Zaloguj się</button>
+            <button class="btnk orangutan" @click="tk">{{ loggedIn ? "Panel" : "Zaloguj się"}}</button>
         </nav>
         <h1>ładna ankieta</h1>
         <h3>dla ciebie, dla rodziny</h3>
@@ -22,20 +22,42 @@
                 <span class="zaletopis">Strona ankiety nie zawiera zbędnych elementów, dzięki czemu użytkownik może skupić się na swoim zadaniu.<br><br>Dodatkowo, dołączone są dwa motywy: ciemny i jasny</span>
             </div>
         </div>
-        <!--<div class="container">
-            <div class="wow">
-                <img src="https://i.imgur.com/ucfyuh2.png">
-                <img src="https://i.imgur.com/bZ5YwOI.png">
-                <img src="https://i.imgur.com/J1AX3Cs.png">
-            </div>
-        </div>-->
+        <span style="display: block; text-align: center">źródło dostępne na <a href="https://github.com/pizza61/la">github</a></span>
     </div>
 </template>
 
 <script>
+let urlpoczatek = "";
+if (process.env.NODE_ENV == "development")
+  urlpoczatek = "http://localhost:8080/";
+else urlpoczatek = "/";
+
 export default {
-    mounted: function() {
-        //console.dir(this.$store)
+    data: function() {
+    return {
+        loggedIn: false
+    }
+    },
+    created: function() {
+        fetch(urlpoczatek+"api/gogiel", {
+            credentials: 'include'
+        })
+        .then(resp => resp.json())
+        .then(data => {
+            this.loggedIn = true;
+        })
+        .catch(err => {
+            this.loggedIn = false;
+        })
+    },
+    methods: {
+        tk: function() {
+            if (this.loggedIn) {
+                window.location = '/panel'
+            } else {
+                window.location = urlpoczatek+'api/login'
+            }
+        }
     }
 }
 </script>
@@ -100,7 +122,9 @@ h1, h3 {
 .zaletyt {
     display: flex;
 
-    .zaleta {
+    
+}
+.zaleta {
         background: rgb(229, 80, 0);
         color: white;
         flex-grow: 1;
@@ -119,8 +143,6 @@ h1, h3 {
             padding: 20px;
         }
     }
-}
-
 @media screen and (max-width: 1024px) {
     .zaletyn, .zaletyt {
         flex-direction: column;

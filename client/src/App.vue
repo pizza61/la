@@ -4,7 +4,7 @@
     <div class="widok">
       <router-view></router-view>
     </div>
-    <footer>źródło dostępne na <a href="https://github.com/pizza61/la">github</a>
+    <footer>
     <button class="btnk motw" @click="switchh">przełącz motyw</button></footer>
   </div>
 </template>
@@ -12,13 +12,17 @@
 <script>
 import Okno from './components/Okno.vue'
 import Glowna from './components/Glowna.vue'
+import Edytor from './components/Edytor.vue'
+import Panel from './components/Panel.vue'
 import VueRouter from 'vue-router';
 
 const router = new VueRouter({
   mode: "history",
   routes: [
     { path: "/", component: Glowna },
-    { path: "/ankieta/:id", component: Okno }
+    { path: "/a/:id", component: Okno },
+    { path: "/edit/:id", component: Edytor},
+    { path: "/panel", component: Panel }
   ]
 })
 export default {

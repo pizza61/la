@@ -8,6 +8,7 @@ import (
 type Ankieta struct {
 	ID         bson.ObjectId  `bson:"_id,omitempty" json:"id"`
 	AID        string         `json:"aid"`
+	AuthorID   string         `json:"authorid"`
 	Dane       Dane           `json:"dane"`
 	Odpowiedzi [][]ROdpowiedz `json:"odpowiedzi"`
 }
@@ -42,8 +43,7 @@ func InitDB() *mgo.Collection {
 	ankiety := c.C("ankiety")
 
 	indexAnkieta := mgo.Index{
-		Key:        []string{"aid", "dane", "odpowiedzi"},
-		Unique:     true,
+		Key:        []string{"aid", "authorid", "dane", "odpowiedzi"},
 		DropDups:   true,
 		Background: true,
 		Sparse:     true,

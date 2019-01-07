@@ -30,3 +30,14 @@ type GoogleData struct {
 	Name          string `json:"name"`
 	Pic           string `json:"picture"`
 }
+
+type AnkietaZListy struct {
+	AID        string `json:"aid"`
+	Naglowek   string `json:"naglowek"`
+	IloscPytan int    `json:"iloscpytan"`
+}
+
+type QA struct {
+	Dane       Dane           `json:"dane"`
+	Odpowiedzi [][]ROdpowiedz `json:"odpowiedzi"`
+}

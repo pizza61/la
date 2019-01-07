@@ -54,9 +54,10 @@ no tutaj ja szczerze powiem że google niepotrzebnie skomplikowało ten proces, 
 * Domyślnie serwer jest uruchomiany na porcie 8080, więc w przeglądarce wystarczy wejść pod adres `http://localhost:8080`
 * Możesz utworzyć przykładową ankietę wchodząc pod adres `/real`.
 ## Czego nie ma a musi być
-* Logowanie bo aktualnie to nic nie robi
-* Dodawanie ankiet (będzie mogło być zablokowane)
-* Sprawdzanie odpowiedzi
+* Edytowanie ankiety
+// * Logowanie bo aktualnie to nic nie robi
+// * Dodawanie ankiet (będzie mogło być zablokowane)
+// * Sprawdzanie odpowiedzi
 
 ## Screen dla zachęty
 ![pokazane tu jest](https://i.imgur.com/BpBRLP5.png)
